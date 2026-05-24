@@ -21,7 +21,7 @@ export default function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>("all")
-  const [activeTab, setActiveTab] = useState<'registrations' | 'site' | 'users' | 'recharges'>('registrations')
+  const [activeTab, setActiveTab] = useState<'registrations' | 'site' | 'users' | 'recharges' | 'assistant'>('registrations')
   const [siteSettings, setSiteSettings] = useState<any>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
@@ -335,6 +335,75 @@ export default function AdminPage() {
     setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
+  // Assistant QA management state
+  const [qaEntries, setQaEntries] = useState<any[]>([])
+  const [qaLoading, setQaLoading] = useState(false)
+  const [newQaQuestion, setNewQaQuestion] = useState('')
+  const [newQaAnswer, setNewQaAnswer] = useState('')
+  const [qaActionLoading, setQaActionLoading] = useState<string | null>(null)
+
+  const fetchQaEntries = async () => {
+    setQaLoading(true)
+    try {
+      const res = await fetch('/api/admin/assistant-qa')
+      if (res.status === 401) {
+        setIsLoggedIn(false)
+        setError('Your admin session expired. Please log in again.')
+        return
+      }
+      const data = await res.json()
+      setQaEntries(data.entries || [])
+    } catch (err) {
+      setError('Failed to load assistant entries')
+    } finally {
+      setQaLoading(false)
+    }
+  }
+
+  const handleAddQa = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newQaQuestion || !newQaAnswer) {
+      setError('Question and answer required')
+      return
+    }
+    setQaActionLoading('add')
+    try {
+      const res = await fetch('/api/admin/assistant-qa', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: newQaQuestion, answer: newQaAnswer })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to add entry')
+      } else {
+        setQaEntries(prev => [data.entry, ...prev])
+        setNewQaQuestion('')
+        setNewQaAnswer('')
+        setError('')
+      }
+    } catch (err) {
+      setError('Error adding entry')
+    } finally {
+      setQaActionLoading(null)
+    }
+  }
+
+  const handleDeleteQa = async (id: string) => {
+    setQaActionLoading(id)
+    try {
+      const res = await fetch(`/api/admin/assistant-qa/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const d = await res.json()
+        setError(d.error || 'Failed to delete')
+      } else {
+        setQaEntries(prev => prev.filter(e => e.id !== id))
+      }
+    } catch (err) {
+      setError('Error deleting entry')
+    } finally {
+      setQaActionLoading(null)
+    }
+  }
+
   const flattenTree = (node: any | null, level = 0): any[] => {
     if (!node) return []
     const current = { id: node.id, name: node.name, email: node.email, planAmount: node.planAmount, status: node.status, level }
@@ -539,6 +608,7 @@ export default function AdminPage() {
           <button onClick={() => { setActiveTab('site'); fetchSiteSettings(); }} className={`px-4 py-2 rounded-md ${activeTab==='site' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Site</button>
           <button onClick={() => { setActiveTab('users'); }} className={`px-4 py-2 rounded-md ${activeTab==='users' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Users</button>
           <button onClick={() => { setActiveTab('recharges'); fetchRechargeRequests() }} className={`px-4 py-2 rounded-md ${activeTab==='recharges' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Recharge Requests</button>
+          <button onClick={() => { setActiveTab('assistant'); fetchQaEntries() }} className={`px-4 py-2 rounded-md ${activeTab==='assistant' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Assistant</button>
         </div>
 
         {activeTab === 'registrations' && (
@@ -950,6 +1020,50 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'assistant' && (
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h2 className="text-xl font-bold mb-4">Growi — Assistant Knowledge Base</h2>
+
+            <form onSubmit={handleAddQa} className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <input placeholder="Question" value={newQaQuestion} onChange={e => setNewQaQuestion(e.target.value)} className="w-full rounded-xl border border-white/10 bg-[#070b11] px-4 py-3 text-sm text-white" />
+              <input placeholder="Answer" value={newQaAnswer} onChange={e => setNewQaAnswer(e.target.value)} className="w-full rounded-xl border border-white/10 bg-[#070b11] px-4 py-3 text-sm text-white" />
+              <div className="flex gap-2">
+                <Button type="submit" className="bg-primary" disabled={qaActionLoading === 'add'}>{qaActionLoading === 'add' ? 'Adding...' : 'Add Entry'}</Button>
+                <Button onClick={() => { setNewQaQuestion(''); setNewQaAnswer('') }} className="bg-white/5">Clear</Button>
+              </div>
+            </form>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gradient-to-r from-white/10 to-white/5 border-b border-white/10">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Question</th>
+                    <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Answer</th>
+                    <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {qaLoading ? (
+                    <tr><td colSpan={3} className="px-4 py-8 text-center text-foreground/60">Loading…</td></tr>
+                  ) : qaEntries.length === 0 ? (
+                    <tr><td colSpan={3} className="px-4 py-8 text-center text-foreground/60">No entries yet.</td></tr>
+                  ) : (
+                    qaEntries.map(e => (
+                      <tr key={e.id} className="hover:bg-white/5">
+                        <td className="px-4 py-3 max-w-[300px] truncate">{e.question}</td>
+                        <td className="px-4 py-3 max-w-[400px] truncate">{e.answer}</td>
+                        <td className="px-4 py-3">
+                          <button onClick={() => handleDeleteQa(e.id)} disabled={qaActionLoading === e.id} className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs">Delete</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
