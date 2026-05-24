@@ -215,8 +215,8 @@ export function Hero() {
           </div>
         </Reveal>
 
-        {/* Realistic 3D Laptop Mockup */}
-        <div className="w-full max-w-6xl mt-16 md:mt-24 perspective-[3000px] flex justify-center">
+        {/* Realistic 3D Laptop Mockup for desktop */}
+        <div className="hidden xl:flex w-full max-w-6xl mt-16 md:mt-24 perspective-[3000px] justify-center">
           <div 
             className="relative transition-all duration-300 ease-out will-change-transform w-full md:w-[90%] lg:w-full"
             style={{ 
@@ -255,6 +255,11 @@ export function Hero() {
               style={{ transform: 'translateZ(-100px)' }}
             />
           </div>
+        </div>
+
+        {/* Mobile-friendly mockup */}
+        <div className="xl:hidden w-full mt-12">
+          <MobileMockup scrollProgress={scrollProgress} />
         </div>
 
         {/* Stats Section */}
