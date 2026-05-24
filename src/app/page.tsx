@@ -13,6 +13,8 @@ import { Partners } from '@/components/sections/Partners'
 import { Reviews } from '@/components/sections/Reviews'
 import { Footer } from '@/components/layout/Footer'
 import { EnrollModal } from '@/components/modals/EnrollModal'
+import dynamic from 'next/dynamic'
+const SupportChat = dynamic(() => import('@/components/SupportChat'), { ssr: false })
 
 export default function Home() {
   const [showWelcomePopup, setShowWelcomePopup] = useState(false)
@@ -51,6 +53,7 @@ export default function Home() {
       <Reviews />
       
       <Footer />
+      <SupportChat />
       
       {/* Global Background Elements */}
       <div className="fixed inset-0 pointer-events-none -z-10">

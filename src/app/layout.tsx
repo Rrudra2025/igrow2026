@@ -1,7 +1,5 @@
 
 import React, { Suspense } from 'react'
-import dynamic from 'next/dynamic'
-const SupportChat = dynamic(() => import('@/components/SupportChat'), { ssr: false })
 import type {Metadata} from 'next';
 import './globals.css';
 
@@ -25,7 +23,6 @@ export default function RootLayout({
       <body className="font-body antialiased bg-background text-foreground overflow-x-hidden">
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background text-foreground">Loading...</div>}>
           {children}
-          <SupportChat />
         </Suspense>
       </body>
     </html>
