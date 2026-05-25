@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { BarChart3, TrendingUp, TrendingDown, Info } from 'lucide-react'
 import { Reveal } from '@/components/ui/reveal'
 
-export function SentimentWidget() {
+export function SentimentWidget({ settings }: { settings?: any }) {
   const [bullishValue, setBullishValue] = useState(65)
 
   useEffect(() => {
@@ -31,13 +31,13 @@ export function SentimentWidget() {
               <div className="space-y-6 flex-1 text-center md:text-left">
                 <div className="flex items-center gap-3 text-primary justify-center md:justify-start">
                   <BarChart3 className="h-6 w-6" />
-                  <span className="font-headline font-bold uppercase tracking-widest text-sm">Live Analysis</span>
+                  <span className="font-headline font-bold uppercase tracking-widest text-sm">{settings?.sentimentLabel || 'Live Analysis'}</span>
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold font-headline leading-tight">
-                  Global Market <span className="text-primary">Sentiment</span>
+                  {settings?.sentimentHeading || 'Global Market '}<span className="text-primary">{settings?.sentimentHeadingHighlight || 'Sentiment'}</span>
                 </h2>
                 <p className="text-foreground/70 text-lg">
-                  Our proprietary engine analyzes real-time order flow and institutional positioning to give students the edge in every trade.
+                  {settings?.sentimentDescription || 'Our proprietary engine analyzes real-time order flow and institutional positioning to give students the edge in every trade.'}
                 </p>
                 
                 <div className="flex items-center gap-6 justify-center md:justify-start">

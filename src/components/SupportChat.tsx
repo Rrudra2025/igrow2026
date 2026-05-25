@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 type Msg = { from: 'user' | 'growi'; text: string }
 
@@ -10,6 +11,14 @@ export default function SupportChat() {
   const [messages, setMessages] = useState<Msg[]>([])
   const [loading, setLoading] = useState(false)
   const listRef = useRef<HTMLDivElement | null>(null)
+  const isMobile = useIsMobile()
+
+  const SendLoader = () => (
+    <span className="relative inline-flex h-10 w-10 items-center justify-center">
+      <span className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400/20 via-sky-500/10 to-transparent blur-sm" />
+      <span className="relative block h-6 w-6 rounded-2xl bg-gradient-to-br from-cyan-400 to-sky-500 shadow-[0_0_20px_rgba(56,189,248,0.5)] transform-gpu animate-spin" />
+    </span>
+  )
 
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
@@ -24,10 +33,10 @@ export default function SupportChat() {
     try {
       const res = await fetch('/api/assistant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) })
       const data = await res.json()
-      const reply = data?.reply || data?.message || "I'm sorry, I can't answer that right now."
+      const reply = data?.reply || data?.message || data?.error || "I'm sorry, I can't answer that right now."
       setMessages(m => [...m, { from: 'growi', text: reply }])
     } catch (err) {
-      setMessages(m => [...m, { from: 'growi', text: "Error: failed to reach assistant." }])
+      setMessages(m => [...m, { from: 'growi', text: `Error: ${err?.message || 'failed to reach assistant.'}` }])
     } finally {
       setLoading(false)
     }
@@ -37,22 +46,45 @@ export default function SupportChat() {
     <div>
       <div className="fixed bottom-6 right-6 z-50">
         {open && (
-          <div className="w-80 max-w-sm bg-white/5 border border-white/10 rounded-2xl p-3 mb-2 shadow-2xl">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-semibold">Growi — Support</div>
-              <button onClick={() => setOpen(false)} className="text-sm text-foreground/60">Close</button>
+          <div className="w-[clamp(300px,95vw,430px)] max-w-md bg-slate-950/95 border border-slate-700 rounded-[28px] p-4 mb-2 shadow-[0_32px_80px_rgba(15,23,42,0.45)] backdrop-blur-none max-h-[80vh]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-semibold text-white">Growi — Support</div>
+              <button onClick={() => setOpen(false)} className="text-sm text-slate-400 hover:text-white">Close</button>
             </div>
-            <div ref={listRef} className="h-48 overflow-y-auto mb-2 p-1 space-y-2">
-              {messages.length === 0 && <div className="text-xs text-foreground/60">Hi — ask me anything about iGrow. If I don't know, admin can add answers.</div>}
-              {messages.map((m, i) => (
-                <div key={i} className={m.from === 'user' ? 'text-right' : 'text-left'}>
-                  <div className={`inline-block px-3 py-1 rounded ${m.from === 'user' ? 'bg-primary text-white' : 'bg-white/5 text-foreground'}`}>{m.text}</div>
+            <div className="relative">
+              <div ref={listRef} className="h-[clamp(260px,45vh,520px)] overflow-y-auto mb-3 p-2 space-y-3 rounded-2xl bg-slate-900 border border-slate-800">
+                {messages.length === 0 && <div className="text-xs text-slate-400">Hi — ask me anything about iGrow. This chat is AI-powered to help with support questions.</div>}
+                {messages.map((m, i) => (
+                  <div key={i} className={m.from === 'user' ? 'text-right' : 'text-left'}>
+                    <div className={`inline-block px-3 py-2 rounded-2xl ${m.from === 'user' ? 'bg-primary text-white' : 'bg-slate-800 text-slate-100'}`}>{m.text}</div>
+                  </div>
+                ))}
+              </div>
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-[28px] bg-slate-950/95 backdrop-blur-sm z-10">
+                  <div className="relative w-32 h-32" style={{ perspective: '900px' }}>
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400/20 via-sky-500/10 to-transparent blur-2xl" />
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <div className="relative w-20 h-20 transform-gpu [transform-style:preserve-3d] animate-[spin_1.8s_linear_infinite]">
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-400/80 to-sky-500/40 shadow-[0_0_60px_rgba(56,189,248,0.5)]" />
+                        <div className="absolute inset-0 rounded-2xl border border-white/10" />
+                        <div className="absolute inset-0 rounded-2xl border border-cyan-400/20 rotate-45" />
+                        <div className="absolute inset-0 rounded-2xl border border-sky-300/20 rotate-90" />
+                        <div className="absolute inset-0 rounded-2xl border border-cyan-200/20 animate-[pulse_1.4s_ease-in-out_infinite]" />
+                      </div>
+                      <div className="absolute bottom-[-2rem] text-xs text-slate-300 uppercase tracking-[0.2em] font-semibold">
+                        Loading AI response...
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
-            <div className="flex gap-2">
-              <input className="flex-1 rounded-lg px-3 py-2 bg-[#0b0f13] border border-white/10 text-sm" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send() }} placeholder="Type your question..." />
-              <button onClick={send} disabled={loading} className="px-3 rounded-lg bg-primary text-white">{loading ? '...' : 'Send'}</button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input className="flex-1 rounded-2xl px-4 py-3 bg-slate-900 border border-slate-700 text-sm text-slate-100 focus:outline-none focus:border-primary" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send() }} placeholder="Ask the AI support assistant..." />
+              <button onClick={send} disabled={loading} className="h-12 rounded-2xl bg-primary text-white transition hover:brightness-110 disabled:opacity-50 flex items-center justify-center">
+                {loading ? <SendLoader /> : 'Send'}
+              </button>
             </div>
           </div>
         )}

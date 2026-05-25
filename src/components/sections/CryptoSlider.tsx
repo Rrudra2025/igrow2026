@@ -31,7 +31,7 @@ const INITIAL_COINS = [
   { name: 'Cardano', symbol: 'ADA', price: 0.65, change: -0.85, color: '#0033ad', marketCap: '22B', volume: '480M' },
 ]
 
-const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/igrow-society"
+const DEFAULT_WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/igrow-society"
 
 // Timeframe helper to generate different data shapes
 const generateTimeframeData = (base: number, points: number, volatility: number) => {
@@ -56,7 +56,7 @@ const TIMEFRAMES = [
   { label: 'ALL', points: 200, volatility: 0.1 },
 ]
 
-function CryptoDetailModal({ coin }: { coin: typeof INITIAL_COINS[0] }) {
+function CryptoDetailModal({ coin, whatsappLink }: { coin: typeof INITIAL_COINS[0], whatsappLink: string }) {
   const [activeTimeframe, setActiveTimeframe] = useState('24H')
   const [chartData, setChartData] = useState<any[]>([])
   const [currentPrice, setCurrentPrice] = useState(coin.price)
@@ -250,7 +250,7 @@ function CryptoDetailModal({ coin }: { coin: typeof INITIAL_COINS[0] }) {
 
             <div className="space-y-4">
               <Button asChild className="w-full bg-primary text-background hover:bg-primary/90 py-8 text-xl font-bold rounded-2xl shadow-[0_10px_30px_rgba(0,230,118,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98]">
-                <a href={WHATSAPP_CHANNEL_URL} target="_blank" rel="noopener noreferrer">
+                <a href={whatsappLink || DEFAULT_WHATSAPP_CHANNEL_URL} target="_blank" rel="noopener noreferrer">
                   Buy {coin.symbol} Now
                 </a>
               </Button>
@@ -269,7 +269,7 @@ function CryptoDetailModal({ coin }: { coin: typeof INITIAL_COINS[0] }) {
   )
 }
 
-function CryptoCard({ coin }: { coin: typeof INITIAL_COINS[0] }) {
+function CryptoCard({ coin, whatsappLink }: { coin: typeof INITIAL_COINS[0], whatsappLink: string }) {
   const [data, setData] = useState<{value: number}[]>([])
   const [currentPrice, setCurrentPrice] = useState(coin.price)
   const [isMounted, setIsMounted] = useState(false)
@@ -362,13 +362,14 @@ function CryptoCard({ coin }: { coin: typeof INITIAL_COINS[0] }) {
           </div>
         </div>
       </DialogTrigger>
-      <CryptoDetailModal coin={coin} />
+      <CryptoDetailModal coin={coin} whatsappLink={whatsappLink} />
     </Dialog>
   )
 }
 
-export function CryptoSlider() {
+export function CryptoSlider({ settings }: { settings?: any }) {
   const [activeTab, setActiveTab] = useState('trending')
+  const whatsappLink = settings?.whatsappGroupUrl || 'https://whatsapp.com/channel/igrow-society'
 
   return (
     <section id="markets" className="py-24 relative bg-[#02080a] overflow-hidden">
@@ -431,7 +432,7 @@ export function CryptoSlider() {
           <CarouselContent className="-ml-4">
             {INITIAL_COINS.map((coin, index) => (
               <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/4 h-[380px]">
-                <CryptoCard coin={coin} />
+                <CryptoCard coin={coin} whatsappLink={whatsappLink} />
               </CarouselItem>
             ))}
           </CarouselContent>

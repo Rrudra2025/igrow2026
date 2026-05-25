@@ -11,7 +11,7 @@ export function Footer() {
   return (
     <footer className="bg-card/50 border-t border-white/10 pt-20 pb-10">
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 mb-20">
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">

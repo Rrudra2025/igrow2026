@@ -218,7 +218,7 @@ function MobileMockup({ scrollProgress }: { scrollProgress: number }) {
   )
 }
 
-export function Benefits() {
+export function Benefits({ settings }: { settings?: any }) {
   const [scrollProgress, setScrollProgress] = useState(0)
 
   useEffect(() => {
@@ -250,13 +250,13 @@ export function Benefits() {
           <div className="text-center space-y-4 mb-16 md:mb-24">
             <div className="flex items-center gap-2 justify-center">
               <Lightbulb className="text-primary h-6 w-6" />
-              <span className="font-bold uppercase tracking-widest text-xs md:text-sm text-primary">Institute Benefits</span>
+              <span className="font-bold uppercase tracking-widest text-xs md:text-sm text-primary">{settings?.benefitsLabel || 'Institute Benefits'}</span>
             </div>
             <h2 className="text-3xl md:text-6xl font-bold font-headline leading-tight">
-              More Than Just <span className="text-primary italic">Education.</span>
+              {settings?.benefitsHeading || 'More Than Just '}<span className="text-primary italic">{settings?.benefitsHeadingHighlight || 'Education.'}</span>
             </h2>
             <p className="text-foreground/60 text-base md:text-lg max-w-2xl mx-auto">
-              Master institutional concepts and gain an edge with an ecosystem designed for high-performance trading.
+              {settings?.benefitsDescription || 'Master institutional concepts and gain an edge with an ecosystem designed for high-performance trading.'}
             </p>
           </div>
         </Reveal>
@@ -299,7 +299,7 @@ export function Benefits() {
             <Reveal direction="right" delay={300}>
               <EnrollModal>
                 <Button size="lg" className="bg-primary text-background hover:bg-primary/90 px-8 py-7 text-lg font-bold rounded-2xl shadow-[0_10px_30px_rgba(0,230,118,0.3)] mt-8">
-                  Join Today
+                  {settings?.benefitsCta || 'Join Today'}
                 </Button>
               </EnrollModal>
             </Reveal>
@@ -316,7 +316,7 @@ export function Benefits() {
             ))}
             <EnrollModal>
               <Button size="lg" className="sm:col-span-2 bg-primary text-background py-6 text-lg font-bold rounded-2xl mt-6">
-                Claim All Benefits
+                {settings?.benefitsCta || 'Claim All Benefits'}
               </Button>
             </EnrollModal>
           </div>

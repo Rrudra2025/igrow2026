@@ -16,9 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Rocket, Send, CheckCircle2, Shield, Mail, Phone, MapPin, User, Gift, AlertCircle, Lock } from 'lucide-react'
-
-const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/igrow-society"
+import { Rocket, Send, CheckCircle2, Shield, Mail, Phone, MapPin, User, Gift, AlertCircle, Lock, MessageCircle } from 'lucide-react'
 
 interface EnrollModalProps {
   children?: React.ReactNode
@@ -41,6 +39,26 @@ export function EnrollModal({ children, open, onOpenChange }: EnrollModalProps) 
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [siteSettings, setSiteSettings] = useState<any>(null)
+
+  useEffect(() => {
+    const loadSiteSettings = async () => {
+      try {
+        const response = await fetch('/api/site')
+        if (response.ok) {
+          const data = await response.json()
+          setSiteSettings(data.siteSettings || data)
+        }
+      } catch (error) {
+        console.warn('Failed to load site settings', error)
+      }
+    }
+
+    loadSiteSettings()
+  }, [])
+
+  const whatsappChannelUrl = siteSettings?.whatsappGroupUrl || 'https://whatsapp.com/channel/igrow-society'
+  const telegramChannelUrl = siteSettings?.telegramGroupUrl || 'https://t.me/igrow-society'
 
   useEffect(() => {
     const referralName = searchParams.get('referralName') || ''
@@ -355,9 +373,15 @@ export function EnrollModal({ children, open, onOpenChange }: EnrollModalProps) 
               </div>
 
               <Button asChild variant="outline" className="w-full border-green-500/20 text-green-500 hover:bg-green-500/10 py-7 md:py-8 rounded-2xl flex items-center justify-center gap-4 h-auto text-base md:text-lg font-bold transition-all mb-4">
-                <a href={WHATSAPP_CHANNEL_URL} target="_blank" rel="noopener noreferrer">
+                <a href={whatsappChannelUrl} target="_blank" rel="noopener noreferrer">
                   <Send className="h-5 w-5 md:h-6 md:w-6" />
                   Connect WhatsApp Channel
+                </a>
+              </Button>
+              <Button asChild variant="outline" className="w-full border-cyan-500/20 text-cyan-300 hover:bg-cyan-500/10 py-7 md:py-8 rounded-2xl flex items-center justify-center gap-4 h-auto text-base md:text-lg font-bold transition-all mb-4">
+                <a href={telegramChannelUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
+                  Connect Telegram Channel
                 </a>
               </Button>
             </form>

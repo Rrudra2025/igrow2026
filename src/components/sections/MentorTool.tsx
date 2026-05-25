@@ -10,7 +10,7 @@ import { Cpu, Sparkles, Loader2, Rocket, ArrowRight } from 'lucide-react'
 import { Reveal } from '@/components/ui/reveal'
 import { EnrollModal } from '@/components/modals/EnrollModal'
 
-export function MentorTool() {
+export function MentorTool({ settings }: { settings?: any }) {
   const [financialGoals, setFinancialGoals] = useState('')
   const [tradingExperience, setTradingExperience] = useState('')
   const [loading, setLoading] = useState(false)
@@ -63,13 +63,13 @@ export function MentorTool() {
           <div className="flex flex-col items-center text-center space-y-6 mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 border border-secondary/20 text-secondary font-medium">
               <Sparkles className="h-4 w-4" />
-              <span>AI Reasoning Engine</span>
+              <span>{settings?.mentorLabel || 'AI Reasoning Engine'}</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold font-headline max-w-3xl leading-[1.1]">
-              Find Your Perfect <span className="text-primary italic">Strategy</span>
+              {settings?.mentorHeading || 'Find Your Perfect '}<span className="text-primary italic">{settings?.mentorHeadingHighlight || 'Strategy'}</span>
             </h2>
             <p className="text-foreground/70 max-w-xl text-lg">
-              Tell our AI Mentor about your goals and experience, and we'll craft the ideal educational path for your success.
+              {settings?.mentorDescription || 'Tell our AI Mentor about your goals and experience, and we\'ll craft the ideal educational path for your success.'}
             </p>
           </div>
         </Reveal>
@@ -113,7 +113,7 @@ export function MentorTool() {
                   ) : (
                     <>
                       <Cpu className="mr-2 h-6 w-6" />
-                      Consult AI Mentor
+                      {settings?.mentorCta || 'Consult AI Mentor'}
                     </>
                   )}
                 </Button>

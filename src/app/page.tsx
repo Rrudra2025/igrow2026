@@ -18,6 +18,8 @@ const SupportChat = dynamic(() => import('@/components/SupportChat'), { ssr: fal
 
 export default function Home() {
   const [showWelcomePopup, setShowWelcomePopup] = useState(false)
+  const [siteSettings, setSiteSettings] = useState<any>(null)
+  const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
     // Open the popup automatically after a short delay on mount
@@ -26,6 +28,45 @@ export default function Home() {
     }, 1500)
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    async function loadSiteSettings() {
+      setPageLoading(true)
+      try {
+        const response = await fetch('/api/site')
+        const data = await response.json()
+        setSiteSettings(data.siteSettings || data)
+      } catch (err) {
+        console.error('Failed to load site settings', err)
+      } finally {
+        setPageLoading(false)
+      }
+    }
+
+    loadSiteSettings()
+  }, [])
+
+  if (pageLoading) {
+    return (
+      <main className="fixed inset-0 z-50 flex items-center justify-center bg-[#020617] text-white">
+        <div className="flex flex-col items-center gap-6 px-6 py-8 rounded-[2rem] bg-slate-950/95 border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
+          <div className="relative w-28 h-28" style={{ perspective: '900px' }}>
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-400/10 via-sky-500/10 to-transparent blur-2xl" />
+            <div className="relative w-full h-full transform-gpu [transform-style:preserve-3d] animate-[spin_2s_linear_infinite]">
+              <div className="absolute inset-0 rounded-3xl border border-cyan-400/20 bg-[#06111d]/90 shadow-[0_0_50px_rgba(56,189,248,0.25)]" />
+              <div className="absolute inset-0 rounded-3xl border border-sky-300/10 rotate-45" />
+              <div className="absolute inset-0 rounded-3xl border border-cyan-400/10 rotate-90" />
+              <div className="absolute inset-4 rounded-3xl border border-cyan-200/20 animate-[pulse_1.4s_ease-in-out_infinite]" />
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400 mb-2">Loading iGrow</p>
+            <p className="text-xl font-bold">Preparing your landing experience...</p>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground relative overflow-x-hidden">
@@ -36,21 +77,21 @@ export default function Home() {
         <EnrollModal open={showWelcomePopup} onOpenChange={setShowWelcomePopup} />
       </Suspense>
 
-      <Hero />
-      <CryptoSlider />
+      <Hero settings={siteSettings} />
+      <CryptoSlider settings={siteSettings} />
       
       {/* Live Analysis Section */}
-      <SentimentWidget />
+      <SentimentWidget settings={siteSettings} />
       
       {/* Institute Benefits - Below Live Analysis */}
-      <Benefits />
+      <Benefits settings={siteSettings} />
       
-      <MentorTool />
-      <Programs />
+      <MentorTool settings={siteSettings} />
+      <Programs settings={siteSettings} />
       
       {/* New Sections */}
-      <Partners />
-      <Reviews />
+      <Partners settings={siteSettings} />
+      <Reviews settings={siteSettings} />
       
       <Footer />
       <SupportChat />

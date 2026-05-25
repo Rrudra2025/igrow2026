@@ -13,13 +13,13 @@ const PARTNERS = [
   { name: 'Bitget', logo: 'BG' }
 ]
 
-export function Partners() {
+export function Partners({ settings }: { settings?: any }) {
   return (
     <section className="py-20 border-t border-white/5 bg-background overflow-hidden">
       <div className="container mx-auto px-6">
         <Reveal>
           <div className="flex flex-col items-center gap-12">
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/20">Institutional Partners & Liquidity</h3>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/20">{settings?.partnersHeading || 'Institutional Partners & Liquidity'}</h3>
             <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
               {PARTNERS.map((partner) => (
                 <div key={partner.name} className="flex items-center gap-2 group cursor-pointer">

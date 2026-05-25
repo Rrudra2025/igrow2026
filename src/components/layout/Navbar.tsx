@@ -11,6 +11,7 @@ import { EnrollModal } from '@/components/modals/EnrollModal'
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [logoUrl, setLogoUrl] = useState('/IGROW%20LOGO.png')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +19,23 @@ export function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const loadSiteSettings = async () => {
+      try {
+        const res = await fetch('/api/site')
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.logoUrl) {
+            setLogoUrl(data.logoUrl)
+          }
+        }
+      } catch (err) {
+        // ignore errors and keep default logo
+      }
+    }
+    loadSiteSettings()
   }, [])
 
   return (
@@ -29,12 +47,13 @@ export function Navbar() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(0,230,118,0.5)] transition-shadow">
-            <Rocket className="text-background h-6 w-6" />
+          <div className="flex items-center">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-16 md:h-24 w-auto object-contain" />
+            ) : (
+              <Rocket className="text-background h-10 w-10" />
+            )}
           </div>
-          <span className="font-headline text-2xl font-bold tracking-tight text-white group-hover:text-primary transition-colors">
-            iGrow<span className="text-primary group-hover:text-white">Society</span>
-          </span>
         </Link>
 
         {/* Desktop Links */}

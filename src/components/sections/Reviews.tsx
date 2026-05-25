@@ -44,17 +44,17 @@ const REVIEWS = [
   }
 ]
 
-export function Reviews() {
+export function Reviews({ settings }: { settings?: any }) {
   return (
     <section className="py-20 md:py-32 relative bg-background overflow-hidden">
       <div className="container mx-auto px-6">
         <Reveal>
           <div className="text-center mb-12 md:mb-20 space-y-4">
             <h2 className="text-3xl md:text-6xl font-bold font-headline leading-tight">
-              Success <span className="text-primary italic">Stories</span>
+              {settings?.reviewsHeading || 'Success '}<span className="text-primary italic">{settings?.reviewsHeadingHighlight || 'Stories'}</span>
             </h2>
             <p className="text-foreground/40 max-w-2xl mx-auto text-sm md:text-lg">
-              Hear from our students who transformed their trading journey through logic and institutional reasoning.
+              {settings?.reviewsDescription || 'Hear from our students who transformed their trading journey through logic and institutional reasoning.'}
             </p>
           </div>
         </Reveal>
@@ -69,7 +69,7 @@ export function Reviews() {
           >
             <CarouselContent className="-ml-4">
               {REVIEWS.map((review, i) => (
-                <CarouselItem key={i} className="pl-4 basis-[85%] md:basis-1/3">
+                <CarouselItem key={i} className="pl-4 basis-[90%] md:basis-1/3">
                   <Reveal delay={i * 100} className="h-full">
                     <div className="h-full p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-white/5 border border-white/10 relative group hover:border-primary/50 transition-all duration-500 flex flex-col justify-between">
                       <Quote className="absolute top-4 right-6 md:top-6 md:right-8 h-6 w-6 md:h-8 md:w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />

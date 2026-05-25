@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   AlertCircle, LogOut, Shield, Loader, Check, X, Search, TrendingUp,
-  Users, DollarSign, Eye, EyeOff, Activity, Filter, Download
+  Users, DollarSign, Eye, EyeOff, Activity, Filter, Download, MessageCircle
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -25,6 +27,7 @@ export default function AdminPage() {
   const [siteSettings, setSiteSettings] = useState<any>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
+  const [logoUploadError, setLogoUploadError] = useState('')
 
   const [rechargeRequests, setRechargeRequests] = useState<any[]>([])
   const [requestActionLoading, setRequestActionLoading] = useState<string | null>(null)
@@ -43,6 +46,7 @@ export default function AdminPage() {
   const [treeData, setTreeData] = useState<any | null>(null)
   const [treeLoading, setTreeLoading] = useState(false)
   const [commissionAmount, setCommissionAmount] = useState('')
+  const isMobile = useIsMobile()
   const [commissionAction, setCommissionAction] = useState<'add' | 'deduct' | 'set'>('add')
   const [commissionLoading, setCommissionLoading] = useState(false)
 
@@ -193,8 +197,10 @@ export default function AdminPage() {
     }
   }
 
-  const handleRechargeUser = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleRechargeUser = async (e?: React.FormEvent | React.MouseEvent<HTMLButtonElement>) => {
+    if (e?.preventDefault) {
+      e.preventDefault()
+    }
     if (!selectedRechargeUserId) {
       setError('Select a user first')
       return
@@ -299,6 +305,26 @@ export default function AdminPage() {
     } finally {
       setSettingsLoading(false)
     }
+  }
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    const allowedTypes = ['image/png', 'image/svg+xml']
+    if (!allowedTypes.includes(file.type)) {
+      setLogoUploadError('Please upload a PNG or SVG logo file.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      setLogoUploadError('')
+      setSiteSettings((prev: any) => ({ ...prev, logoUrl: reader.result }))
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -578,7 +604,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#06080a] via-[#0a0c0e] to-[#0f1117] text-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#06080a] via-[#0a0c0e] to-[#0f1117] text-white p-4 pb-24 md:p-8 md:pb-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
@@ -603,7 +629,7 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex items-center gap-3">
+<div className="hidden md:flex mb-6 flex-wrap items-center gap-3">
           <button onClick={() => setActiveTab('registrations')} className={`px-4 py-2 rounded-md ${activeTab==='registrations' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Registrations</button>
           <button onClick={() => { setActiveTab('site'); fetchSiteSettings(); }} className={`px-4 py-2 rounded-md ${activeTab==='site' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Site</button>
           <button onClick={() => { setActiveTab('users'); }} className={`px-4 py-2 rounded-md ${activeTab==='users' ? 'bg-primary text-white' : 'bg-white/5 text-foreground/70'}`}>Users</button>
@@ -822,27 +848,183 @@ export default function AdminPage() {
         )}
 
         {activeTab === 'site' && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h2 className="text-xl font-bold mb-4">Site Settings</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs uppercase text-foreground/60">Site Title</Label>
-                <Input value={siteSettings?.title || ''} onChange={(e) => setSiteSettings({...siteSettings, title: e.target.value})} className="mt-2" />
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
+            <h2 className="text-xl font-bold">Site Settings</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Site Title</Label>
+                  <Input value={siteSettings?.title || ''} onChange={(e) => setSiteSettings({...siteSettings, title: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Tagline</Label>
+                  <Input value={siteSettings?.tagline || ''} onChange={(e) => setSiteSettings({...siteSettings, tagline: e.target.value})} className="mt-2" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase text-foreground/60">Logo URL</Label>
+                  <Input value={siteSettings?.logoUrl || ''} onChange={(e) => setSiteSettings({...siteSettings, logoUrl: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Footer Text</Label>
+                  <Input value={siteSettings?.footerText || ''} onChange={(e) => setSiteSettings({...siteSettings, footerText: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">WhatsApp Group Link</Label>
+                  <Input value={siteSettings?.whatsappGroupUrl || ''} onChange={(e) => setSiteSettings({...siteSettings, whatsappGroupUrl: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Telegram Group Link</Label>
+                  <Input value={siteSettings?.telegramGroupUrl || ''} onChange={(e) => setSiteSettings({...siteSettings, telegramGroupUrl: e.target.value})} className="mt-2" />
+                </div>
               </div>
-              <div>
-                <Label className="text-xs uppercase text-foreground/60">Tagline</Label>
-                <Input value={siteSettings?.tagline || ''} onChange={(e) => setSiteSettings({...siteSettings, tagline: e.target.value})} className="mt-2" />
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Upload PNG or SVG Logo</Label>
+                  <input
+                    type="file"
+                    accept="image/png"
+                    onChange={handleLogoFileChange}
+                    className="mt-2 block w-full text-sm text-foreground/80 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-primary file:text-white"
+                  />
+                  {logoUploadError && <p className="text-sm text-red-400">{logoUploadError}</p>}
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Hero Badge</Label>
+                  <Input value={siteSettings?.heroBadge || ''} onChange={(e) => setSiteSettings({...siteSettings, heroBadge: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Hero Heading</Label>
+                  <Input value={siteSettings?.heroHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, heroHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Hero Highlight</Label>
+                  <Input value={siteSettings?.heroHighlight || ''} onChange={(e) => setSiteSettings({...siteSettings, heroHighlight: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Hero Description</Label>
+                  <Textarea value={siteSettings?.heroDescription || ''} onChange={(e) => setSiteSettings({...siteSettings, heroDescription: e.target.value})} className="mt-2 h-28" />
+                </div>
               </div>
-              <div>
-                <Label className="text-xs uppercase text-foreground/60">Logo URL</Label>
-                <Input value={siteSettings?.logoUrl || ''} onChange={(e) => setSiteSettings({...siteSettings, logoUrl: e.target.value})} className="mt-2" />
-              </div>
-              <div>
-                <Label className="text-xs uppercase text-foreground/60">Footer Text</Label>
-                <Input value={siteSettings?.footerText || ''} onChange={(e) => setSiteSettings({...siteSettings, footerText: e.target.value})} className="mt-2" />
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Hero Primary CTA</Label>
+                  <Input value={siteSettings?.heroPrimaryCta || ''} onChange={(e) => setSiteSettings({...siteSettings, heroPrimaryCta: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Hero Secondary CTA</Label>
+                  <Input value={siteSettings?.heroSecondaryCta || ''} onChange={(e) => setSiteSettings({...siteSettings, heroSecondaryCta: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Benefits Label</Label>
+                  <Input value={siteSettings?.benefitsLabel || ''} onChange={(e) => setSiteSettings({...siteSettings, benefitsLabel: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Benefits Heading</Label>
+                  <Input value={siteSettings?.benefitsHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, benefitsHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Benefits Heading Highlight</Label>
+                  <Input value={siteSettings?.benefitsHeadingHighlight || ''} onChange={(e) => setSiteSettings({...siteSettings, benefitsHeadingHighlight: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Benefits Description</Label>
+                  <Textarea value={siteSettings?.benefitsDescription || ''} onChange={(e) => setSiteSettings({...siteSettings, benefitsDescription: e.target.value})} className="mt-2 h-28" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Benefits CTA</Label>
+                  <Input value={siteSettings?.benefitsCta || ''} onChange={(e) => setSiteSettings({...siteSettings, benefitsCta: e.target.value})} className="mt-2" />
+                </div>
               </div>
             </div>
-            <div className="mt-4 flex gap-3">
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Sentiment Label</Label>
+                  <Input value={siteSettings?.sentimentLabel || ''} onChange={(e) => setSiteSettings({...siteSettings, sentimentLabel: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Sentiment Heading</Label>
+                  <Input value={siteSettings?.sentimentHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, sentimentHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Sentiment Heading Highlight</Label>
+                  <Input value={siteSettings?.sentimentHeadingHighlight || ''} onChange={(e) => setSiteSettings({...siteSettings, sentimentHeadingHighlight: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Sentiment Description</Label>
+                  <Textarea value={siteSettings?.sentimentDescription || ''} onChange={(e) => setSiteSettings({...siteSettings, sentimentDescription: e.target.value})} className="mt-2 h-28" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Mentor Label</Label>
+                  <Input value={siteSettings?.mentorLabel || ''} onChange={(e) => setSiteSettings({...siteSettings, mentorLabel: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Mentor Heading</Label>
+                  <Input value={siteSettings?.mentorHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, mentorHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Mentor Heading Highlight</Label>
+                  <Input value={siteSettings?.mentorHeadingHighlight || ''} onChange={(e) => setSiteSettings({...siteSettings, mentorHeadingHighlight: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Mentor Description</Label>
+                  <Textarea value={siteSettings?.mentorDescription || ''} onChange={(e) => setSiteSettings({...siteSettings, mentorDescription: e.target.value})} className="mt-2 h-28" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Mentor CTA</Label>
+                  <Input value={siteSettings?.mentorCta || ''} onChange={(e) => setSiteSettings({...siteSettings, mentorCta: e.target.value})} className="mt-2" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Programs Label</Label>
+                  <Input value={siteSettings?.programsLabel || ''} onChange={(e) => setSiteSettings({...siteSettings, programsLabel: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Programs Heading</Label>
+                  <Input value={siteSettings?.programsHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, programsHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Programs Heading Highlight</Label>
+                  <Input value={siteSettings?.programsHeadingHighlight || ''} onChange={(e) => setSiteSettings({...siteSettings, programsHeadingHighlight: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Programs Description</Label>
+                  <Textarea value={siteSettings?.programsDescription || ''} onChange={(e) => setSiteSettings({...siteSettings, programsDescription: e.target.value})} className="mt-2 h-28" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Partners Heading</Label>
+                  <Input value={siteSettings?.partnersHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, partnersHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Reviews Heading</Label>
+                  <Input value={siteSettings?.reviewsHeading || ''} onChange={(e) => setSiteSettings({...siteSettings, reviewsHeading: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Reviews Heading Highlight</Label>
+                  <Input value={siteSettings?.reviewsHeadingHighlight || ''} onChange={(e) => setSiteSettings({...siteSettings, reviewsHeadingHighlight: e.target.value})} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Reviews Description</Label>
+                  <Textarea value={siteSettings?.reviewsDescription || ''} onChange={(e) => setSiteSettings({...siteSettings, reviewsDescription: e.target.value})} className="mt-2 h-28" />
+                </div>
+              </div>
+            </div>
+
+            {siteSettings?.logoUrl ? (
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase text-foreground/60 mb-2">Logo Preview</p>
+                <div className="inline-flex items-center justify-center rounded-lg bg-background p-4">
+                  <img src={siteSettings.logoUrl} alt="Logo preview" className="h-16 object-contain" />
+                </div>
+              </div>
+            ) : null}
+            <div className="mt-4 flex gap-3 flex-wrap">
               <Button onClick={updateSiteSettings} className="bg-primary">Save</Button>
               <Button onClick={fetchSiteSettings} className="bg-white/5">Reset</Button>
             </div>
@@ -911,6 +1093,68 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            <div className="mt-8 rounded-2xl border border-white/10 bg-black/40 p-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-xl font-bold">Manual Wallet Topup</h2>
+                  <p className="text-foreground/60 text-sm">Select a user and credit their wallet instantly.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 items-end">
+                <div className="lg:col-span-2">
+                  <Label className="text-xs uppercase text-foreground/60">User</Label>
+                  <select
+                    value={selectedRechargeUserId}
+                    onChange={(e) => setSelectedRechargeUserId(e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#070b11] px-4 py-3 text-sm text-white"
+                  >
+                    <option value="">Select user</option>
+                    {registrations.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} — {user.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Amount</Label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={rechargeAmount}
+                    onChange={(e) => setRechargeAmount(e.target.value)}
+                    placeholder="Amount"
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#070b11] px-4 py-3 text-sm text-white"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-foreground/60">Currency</Label>
+                  <select
+                    value={rechargeCurrency}
+                    onChange={(e) => setRechargeCurrency(e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#070b11] px-4 py-3 text-sm text-white"
+                  >
+                    <option value="USDT">USDT</option>
+                    <option value="BTC">BTC</option>
+                    <option value="ETH">ETH</option>
+                  </select>
+                </div>
+                <div className="lg:col-span-2">
+                  <Label className="text-xs uppercase text-foreground/60">Note</Label>
+                  <input
+                    type="text"
+                    value={rechargeNote}
+                    onChange={(e) => setRechargeNote(e.target.value)}
+                    placeholder="Notes (optional)"
+                    className="mt-2 w-full rounded-xl border border-white/10 bg-[#070b11] px-4 py-3 text-sm text-white"
+                  />
+                </div>
+                <Button type="button" onClick={handleRechargeUser} className="bg-primary lg:col-span-1">Credit Wallet</Button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -934,6 +1178,7 @@ export default function AdminPage() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-bold mb-1">Credit Wallet To</p>
                     <p className="text-white font-semibold">{registrations.find((user) => user.id === selectedRechargeUserId)?.name || 'Selected user'}</p>
+                    <p className="text-foreground/60 text-sm mt-1">Balance: ₹{(registrations.find((user) => user.id === selectedRechargeUserId)?.walletBalance || 0).toLocaleString()}</p>
                   </div>
                   <button
                     type="button"
@@ -981,6 +1226,7 @@ export default function AdminPage() {
                     <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Name</th>
                     <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Email</th>
                     <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Phone</th>
+                    <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Wallet</th>
                     <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Password</th>
                     <th className="px-4 py-2 text-left text-xs font-bold uppercase text-foreground/60">Action</th>
                   </tr>
@@ -990,7 +1236,7 @@ export default function AdminPage() {
                     <tr key={u.id} className="group hover:bg-white/5">
                       <td className="px-4 py-3">{u.name}</td>
                       <td className="px-4 py-3 text-xs font-mono">{u.email}</td>
-                      <td className="px-4 py-3">{u.phone}</td>
+                      <td className="px-4 py-3">₹{(u.walletBalance || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-xs font-mono">
                         {revealedPasswords[u.id] ? u.password : '•'.repeat(8)}
                         <button onClick={() => toggleReveal(u.id)} className="ml-3 text-primary text-xs">{revealedPasswords[u.id] ? 'Hide' : 'Show'}</button>
@@ -1146,6 +1392,52 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#02040a]/95 backdrop-blur-xl py-2 md:hidden">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 px-4">
+            <button
+              onClick={() => setActiveTab('registrations')}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 transition ${activeTab === 'registrations' ? 'bg-white/10 text-white' : 'bg-white/5 text-foreground/70'}`}
+              aria-label="Registrations"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-[10px]">Regs</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('site'); fetchSiteSettings(); }}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 transition ${activeTab === 'site' ? 'bg-white/10 text-white' : 'bg-white/5 text-foreground/70'}`}
+              aria-label="Site Settings"
+            >
+              <Shield className="h-5 w-5" />
+              <span className="text-[10px]">Site</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 transition ${activeTab === 'users' ? 'bg-white/10 text-white' : 'bg-white/5 text-foreground/70'}`}
+              aria-label="Users"
+            >
+              <Search className="h-5 w-5" />
+              <span className="text-[10px]">Users</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('recharges'); fetchRechargeRequests() }}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 transition ${activeTab === 'recharges' ? 'bg-white/10 text-white' : 'bg-white/5 text-foreground/70'}`}
+              aria-label="Recharge Requests"
+            >
+              <DollarSign className="h-5 w-5" />
+              <span className="text-[10px]">Topup</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('assistant'); fetchQaEntries() }}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 transition ${activeTab === 'assistant' ? 'bg-white/10 text-white' : 'bg-white/5 text-foreground/70'}`}
+              aria-label="Assistant"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-[10px]">AI</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

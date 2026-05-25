@@ -67,7 +67,7 @@ const PROGRAMS = [
   }
 ]
 
-export function Programs() {
+export function Programs({ settings }: { settings?: any }) {
   return (
     <section id="programs" className="py-20 md:py-32 bg-background">
       <div className="container mx-auto px-6">
@@ -76,13 +76,13 @@ export function Programs() {
             <div className="space-y-4 max-w-2xl">
               <div className="flex items-center gap-2 justify-center md:justify-start">
                 <Trophy className="text-primary h-6 w-6" />
-                <span className="font-bold uppercase tracking-widest text-xs md:text-sm text-primary">Our Programs</span>
+                <span className="font-bold uppercase tracking-widest text-xs md:text-sm text-primary">{settings?.programsLabel || 'Our Programs'}</span>
               </div>
               <h2 className="text-3xl md:text-6xl font-bold font-headline leading-tight">
-                iGrow Learning <span className="text-primary">Institute.</span>
+                {settings?.programsHeading || 'iGrow Learning '}<span className="text-primary">{settings?.programsHeadingHighlight || 'Institute.'}</span>
               </h2>
               <p className="text-foreground/60 text-base md:text-lg leading-relaxed">
-                Course & Admission Programs designed to transform your financial future.
+                {settings?.programsDescription || 'Course & Admission Programs designed to transform your financial future.'}
               </p>
             </div>
             <Button variant="link" className="text-primary text-lg md:text-xl font-bold group p-0">

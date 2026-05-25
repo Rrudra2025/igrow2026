@@ -14,9 +14,9 @@ const MOCK_CHART_DATA = [
   { value: 109000 }, { value: 115000 }, { value: 114000 }, { value: 118924 }
 ]
 
-const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/igrow-society"
+const DEFAULT_WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/igrow-society"
 
-function MockDashboard() {
+function MockDashboard({ settings }: { settings?: any }) {
   return (
     <div className="absolute inset-0 bg-[#06080a] text-white flex flex-col p-4 md:p-6 overflow-hidden rounded-t-[1.5rem] border-b border-white/5">
       {/* Top Header */}
@@ -40,7 +40,7 @@ function MockDashboard() {
             <Lock size={10} className="text-primary" />
             SECURE NODE 04
           </div>
-          <a href={WHATSAPP_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-primary text-background text-[9px] md:text-[10px] font-bold shadow-[0_0_15px_rgba(0,230,118,0.4)] transition-all hover:scale-105">Execute</a>
+          <a href={settings?.whatsappGroupUrl || DEFAULT_WHATSAPP_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-primary text-background text-[9px] md:text-[10px] font-bold shadow-[0_0_15px_rgba(0,230,118,0.4)] transition-all hover:scale-105">Execute</a>
           <div className="h-7 w-7 md:h-9 md:h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
             <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-tr from-primary to-secondary" />
           </div>
@@ -69,8 +69,8 @@ function MockDashboard() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 relative mb-4 md:mb-6">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="flex-1 min-h-[260px] relative mb-4 md:mb-6">
+            <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={MOCK_CHART_DATA}>
                 <defs>
                   <linearGradient id="dashboardGradient" x1="0" y1="0" x2="0" y2="1">
@@ -151,7 +151,75 @@ function MockDashboard() {
   )
 }
 
-export function Hero() {
+function MobileMockup({ scrollProgress }: { scrollProgress: number }) {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const rotateY = isMobile ? -10 + scrollProgress * 10 : -12 + scrollProgress * 12
+  const rotateX = 12
+  const opacity = 0.8 + scrollProgress * 0.2
+
+  return (
+    <div className="relative w-full max-w-[360px] mx-auto flex justify-center items-center perspective-[2500px]">
+      <div
+        className="relative w-[240px] sm:w-[280px] h-[520px] sm:h-[580px] rounded-[3rem] bg-[#0a0a0a] border-[6px] border-[#1a1a1a] shadow-[0_30px_80px_rgba(0,0,0,0.65)] overflow-hidden"
+        style={{ transform: `rotateY(${rotateY}deg) rotateX(${rotateX}deg)`, opacity }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10 pointer-events-none" />
+        <div className="relative h-full p-5 flex flex-col gap-4">
+          <div className="flex items-center justify-between text-[8px] text-foreground/40 uppercase tracking-[0.3em] font-bold">
+            <span>9:41</span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-1.5 rounded-full bg-foreground/40" />
+              <span className="w-3 h-1.5 rounded-full bg-foreground/40" />
+              <span className="w-3 h-1.5 rounded-full bg-foreground/40" />
+            </span>
+          </div>
+
+          <div className="rounded-[2rem] border border-white/10 bg-[#06080a] p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between text-[9px] text-foreground/40 uppercase tracking-[0.2em]">
+              <span className="text-white font-bold">Portfolio</span>
+              <span className="text-primary">Live</span>
+            </div>
+            <div className="text-3xl font-bold text-white">$106,924</div>
+            <div className="text-[10px] text-foreground/40">+2.3% over 24h</div>
+            <div className="h-24 rounded-3xl bg-gradient-to-b from-primary/30 to-transparent" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Buy', value: '$23.4k' },
+              { label: 'Sell', value: '$22.9k' }
+            ].map((item) => (
+              <div key={item.label} className="rounded-3xl bg-white/5 border border-white/10 p-3 text-[10px]">
+                <div className="font-bold text-white">{item.label}</div>
+                <div className="text-foreground/50 mt-1">{item.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-auto grid gap-3 text-[10px]">
+            <div className="rounded-3xl bg-white/5 border border-white/10 p-3">
+              <div className="text-foreground/40 uppercase tracking-[0.2em] mb-2">Market Signal</div>
+              <div className="text-sm font-bold text-white">Bullish momentum</div>
+            </div>
+            <div className="rounded-3xl bg-primary/15 border border-primary/20 p-3 text-primary font-bold text-center uppercase tracking-[0.2em]">
+              Execute Strategy
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function Hero({ settings }: { settings?: any }) {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -191,25 +259,25 @@ export function Hero() {
           <div className="space-y-6 md:space-y-8 flex flex-col items-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs md:text-sm font-medium animate-pulse-slow">
               <Zap className="h-3 w-3 md:h-4 md:w-4" />
-              <span>Next-Gen Trading Academy</span>
+              <span>{settings?.heroBadge || 'Next-Gen Trading Academy'}</span>
             </div>
             
             <h1 className="font-headline text-4xl md:text-7xl lg:text-9xl font-bold leading-[0.9] tracking-tight text-white max-w-5xl">
-              MASTERY OF THE <span className="text-primary italic">MARKETS.</span>
+              {settings?.heroHeading || 'MASTERY OF THE'} <span className="text-primary italic">{settings?.heroHighlight || 'MARKETS.'}</span>
             </h1>
             
             <p className="text-base md:text-xl lg:text-2xl text-foreground/70 max-w-2xl leading-relaxed">
-              iGrow Society bridges the gap between traditional finance and the decentralized future. Experience professional trading education with AI-driven mentorship.
+              {settings?.heroDescription || 'iGrow Society bridges the gap between traditional finance and the decentralized future. Experience professional trading education with AI-driven mentorship.'}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full sm:w-auto">
               <EnrollModal>
                 <Button size="lg" className="bg-primary text-background hover:bg-primary/90 px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold rounded-2xl w-full sm:w-auto shadow-[0_0_40px_rgba(0,230,118,0.4)] transition-all hover:scale-105 active:scale-95">
-                  Join The Society
+                  {settings?.heroPrimaryCta || 'Join The Society'}
                 </Button>
               </EnrollModal>
               <Button size="lg" variant="outline" className="border-white/10 text-white hover:bg-white/5 px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold rounded-2xl w-full sm:w-auto backdrop-blur-sm">
-                View Catalog
+                {settings?.heroSecondaryCta || 'View Catalog'}
               </Button>
             </div>
           </div>
@@ -232,7 +300,7 @@ export function Hero() {
                 boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.05)'
               }}
             >
-              <MockDashboard />
+              <MockDashboard settings={settings} />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-white/5 pointer-events-none z-30" />
             </div>
 
